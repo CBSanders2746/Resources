@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
 
 	#if defined(__linux__)
 		cout << "Running on Linux." << endl;
+		cout << "Added Repository on Linux." << endl;
 	#endif
 
 	#if defined(_WIN32_) || (_WIN64_)
