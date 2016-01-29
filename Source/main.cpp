@@ -1,17 +1,23 @@
 // Example program:
 // Using SDL2 to create an application window
-
+//Note to self: Convert the 2Player mode to true multiplayer over the break as a test-thingy.
+//-Create a class/method to handle the creations of the images
 #if defined(__APPLE__)
-	#include "SDL2/SDL.h"
-	#include "SDL2_Image/SDL_image.h"
+#include "SDL2/SDL.h"
+#include "SDL2_Image/SDL_image.h"
 #endif
 
 #if defined(__linux__)
-	#include "SDL2/SDL.h"
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
+#endif
+
+#if defined(__linux__)
+#include <unistd.h>
 #endif
 
 #if defined(_WIN32) || (_WIN64)
-	#include "SDL.h"
+#include "SDL.h"
 #endif
 
 #include <stdio.h>
@@ -50,274 +56,333 @@ void UpdateBackground()
 
 int main(int argc, char* argv[]) {
 
-	#if defined(__APPLE__)
-		cout << "Running on Apple." << endl;
-		//get current working directory
-		string s_cwd(getcwd(NULL, 0));
-		//create a string linking to the mac's images folder
-		string s_cwd_images = s_cwd + "/Resources/Images";
-		//test
-		//cout<<s_cwd_images<<endl;
-	#endif
+#if defined(__APPLE__)
+	cout << "Running on Apple." << endl;
+	//get current working directory
+	string s_cwd(getcwd(NULL, 0));
+	//create a string linking to the mac's images folder
+	string s_cwd_images = s_cwd + "/Resources/Images";
+	//test
+	//cout<<s_cwd_images<<endl;
+#endif
 
-	#if defined(__linux__)
-		cout << "Running on Linux." << endl;
-	#endif
+#if defined(__linux__)
+	cout << "Running on Linux." << endl;
+#endif
 
-	#if defined(_WIN32_) || (_WIN64_)
-		cout << "Running on Windows." << endl;
-	#endif
+#if defined(_WIN32_) || (_WIN64_)
+	cout << "Running on Windows." << endl;
+#endif
 
-    SDL_Window *window;                    // Declare a pointer
+	SDL_Window *window;                    // Declare a pointer
 
-    SDL_Init(SDL_INIT_EVERYTHING);              // Initialize SDL2 //VIDEO
+	SDL_Init(SDL_INIT_EVERYTHING);              // Initialize SDL2 //VIDEO
 
-    // Create an application window with the following settings:
-    window = SDL_CreateWindow(
-        "An SDL2 window",                  // window title
-        SDL_WINDOWPOS_UNDEFINED,           // initial x position
-        SDL_WINDOWPOS_UNDEFINED,           // initial y position
-        1024,                               // width, in pixels
-        768,                               // height, in pixels
-        SDL_WINDOW_OPENGL                  // flags - see below
-    );
+	// Create an application window with the following settings:
+	window = SDL_CreateWindow(
+			"An SDL2 window",                  // window title
+			SDL_WINDOWPOS_UNDEFINED,           // initial x position
+			SDL_WINDOWPOS_UNDEFINED,           // initial y position
+			1024,                               // width, in pixels
+			768,                               // height, in pixels
+			SDL_WINDOW_OPENGL                  // flags - see below
+	);
 
-    // Check that the window was successfully created
-    if (window == NULL) {
-        // In the case that the window could not be made...
-        printf("Could not create window: %s\n", SDL_GetError());
-        return 1;
-    }
+	// Check that the window was successfully created
+	if (window == NULL) {
+		// In the case that the window could not be made...
+		printf("Could not create window: %s\n", SDL_GetError());
+		return 1;
+	}
 
-    //accelerated openGL renderer declared
-    SDL_Renderer *renderer = NULL;
+	//accelerated openGL renderer declared
+	SDL_Renderer *renderer = NULL;
 
-    //create the renderer
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	//create the renderer
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    //*********Create Background Image**************
-    string BGpath = s_cwd_images + "/1024x768.png";
-    string IMGcur = s_cwd_images + "/DotCursor.png";
-    string Tpath = s_cwd_images + "/Title.png";
-    string P1path = s_cwd_images + "/P1.png";
-    string P2path = s_cwd_images + "/P2.png";
-    string INSpath = s_cwd_images + "/Instructions.png";
-    string QUITpath = s_cwd_images + "/Quit.png";
-    string OverP1path = s_cwd_images + "/P1Over.png";
-    string OverP2path = s_cwd_images + "/P2Over.png";
-    string OverINSpath = s_cwd_images + "/InstructionsOver.png";
-    string OverQUITpath = s_cwd_images + "/QuitOver.png";
+	//*********Create Background Image**************
+	string BGpath = s_cwd_images + "/1024x768.png";
+	string IMGcur = s_cwd_images + "/DotCursor.png";
+	string Tpath = s_cwd_images + "/Title.png";
+	string P1path = s_cwd_images + "/P1.png";
+	string P2path = s_cwd_images + "/P2.png";
+	string INSpath = s_cwd_images + "/Instructions.png";
+	string QUITpath = s_cwd_images + "/Quit.png";
+	string OverP1path = s_cwd_images + "/P1Over.png";
+	string OverP2path = s_cwd_images + "/P2Over.png";
+	string OverINSpath = s_cwd_images + "/InstructionsOver.png";
+	string OverQUITpath = s_cwd_images + "/QuitOver.png";
 
-    string ITpath = s_cwd_images + "/InstructionsTitle.png";
-    string MENUpath = s_cwd_images + "/Menu.png";
-    string OverMENUpath = s_cwd_images + "/MenuOver.png";
-    //p1ship, p2ship, win, lose
+	string ITpath = s_cwd_images + "/InstructionsTitle.png";
+	string MENUpath = s_cwd_images + "/Menu.png";
+	string OverMENUpath = s_cwd_images + "/MenuOver.png";
 
-    //******************************** Create Instructions Title Text/Image ********************************
-    //create SDL surface to hold the texture file
-    surface = IMG_Load(ITpath.c_str());
-    SDL_Texture *Ititle;//create
-    //place surface info into the texture
-    Ititle = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
-    //create the SDL_Rectangle for the texture's position and size -x,y,w,h
-    SDL_Rect itPos;
-    //set the x, y, w, and h for the rectangle
-    itPos.x = 120;
-    itPos.y = 271;
-    itPos.w = 781;//width of image
-    itPos.h = 258;//height of image
-    //Main Menu END
+	string LOSEpath = s_cwd_images + "/LoseTitle.png";
+	string WINpath = s_cwd_images + "/WinTitle.png";
+	string PLAYpath = s_cwd_images + "/Play.png";
+	string OverPLAYpath = s_cwd_images + "/PlayOver.png";
+	//p1ship, p2ship, win, lose
 
-    //******************************** Create Menu Normal/Over Text/Image ********************************
-    //create SDL surface to hold the texture file
-    surface = IMG_Load(MENUpath.c_str());
-    SDL_Texture *Menu;//create
-    //place surface info into the texture
-    Menu = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
+	//******************************** Create Win Title Text/Image ********************************
+	//create SDL surface to hold the texture file
+	surface = IMG_Load(WINpath.c_str());
+	SDL_Texture *Win;//create
+	//place surface info into the texture
+	Win = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
+	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+	SDL_Rect wPos;
+	//set the x, y, w, and h for the rectangle
+	wPos.x = 240;
+	wPos.y = 288;
+	wPos.w = 596;//width of image
+	wPos.h = 114;//height of image
+	//Main Menu END
 
-    surface = IMG_Load(OverMENUpath.c_str());
-    SDL_Texture *MenuOver;
-    MenuOver = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
+	//******************************** Create Lose Title Text/Image ********************************
+	//create SDL surface to hold the texture file
+	surface = IMG_Load(LOSEpath.c_str());
+	SDL_Texture *Lose;//create
+	//place surface info into the texture
+	Lose = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
+	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+	SDL_Rect lPos;
+	//set the x, y, w, and h for the rectangle
+	lPos.x = 240;
+	lPos.y = 288;
+	lPos.w = 596;//width of image
+	lPos.h = 114;//height of image
+	//Main Menu END
 
-    //create the SDL_Rectangle for the texture's position and size -x,y,w,h
-    SDL_Rect mPos;
-    //set the x, y, w, and h for the rectangle
-    mPos.x = 22;
-    mPos.y = 702;
-    mPos.w = 145;//width of image
-    mPos.h = 41;//height of image
-    //Main Menu END
+	//******************************** Create Play Normal/Over Text/Image ********************************
+	//create SDL surface to hold the texture file
+	surface = IMG_Load(PLAYpath.c_str());
+	SDL_Texture *Play;//create
+	//place surface info into the texture
+	Play = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
 
-    //******************************** Create Backgrounds ********************************
-    //create SDL surface to hold the background image
-    SDL_Surface *surface = IMG_Load(BGpath.c_str());
+	surface = IMG_Load(OverPLAYpath.c_str());
+	SDL_Texture *PlayOver;
+	PlayOver = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
 
-    //create a SDL texture
-    SDL_Texture *background1;
-    SDL_Texture *background2;
+	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+	SDL_Rect pPos;
+	//set the x, y, w, and h for the rectangle
+	pPos.x = 875;
+	pPos.y = 702;
+	pPos.w = 125;//width of image
+	pPos.h = 40;//height of image
+	//Main Menu END
 
-    //place surface info into the texture
-    background1 = SDL_CreateTextureFromSurface(renderer, surface);
-    background2 = SDL_CreateTextureFromSurface(renderer, surface);
+	//******************************** Create Instructions Title Text/Image ********************************
+	//create SDL surface to hold the texture file
+	surface = IMG_Load(ITpath.c_str());
+	SDL_Texture *Ititle;//create
+	//place surface info into the texture
+	Ititle = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
+	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+	SDL_Rect itPos;
+	//set the x, y, w, and h for the rectangle
+	itPos.x = 120;
+	itPos.y = 271;
+	itPos.w = 781;//width of image
+	itPos.h = 258;//height of image
+	//Main Menu END
 
-    //free the SDL surfaces
-    SDL_FreeSurface(surface);
+	//******************************** Create Menu Normal/Over Text/Image ********************************
+	//create SDL surface to hold the texture file
+	surface = IMG_Load(MENUpath.c_str());
+	SDL_Texture *Menu;//create
+	//place surface info into the texture
+	Menu = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
 
-    //create the SDL_Rectangle for the texture's position and size -x,y,w,h
-    SDL_Rect bk1Pos;
-    SDL_Rect bk2Pos;
+	surface = IMG_Load(OverMENUpath.c_str());
+	SDL_Texture *MenuOver;
+	MenuOver = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
 
-    //set the x, y, w, and h for the rectangle
-    bk1Pos.x = 0;
-    bk1Pos.y = 0;
-    bk1Pos.w = 1024;
-    bk1Pos.h = 768;
+	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+	SDL_Rect mPos;
+	//set the x, y, w, and h for the rectangle
+	mPos.x = 22;
+	mPos.y = 702;
+	mPos.w = 145;//width of image
+	mPos.h = 41;//height of image
+	//Main Menu END
 
-    bk2Pos.x = 0;
-    bk2Pos.y = -768;
-    bk2Pos.w = 1024;
-    bk2Pos.h = 768;
+	//******************************** Create Backgrounds ********************************
+	//create SDL surface to hold the background image
+	SDL_Surface *surface = IMG_Load(BGpath.c_str());
+
+	//create a SDL texture
+	SDL_Texture *background1;
+	SDL_Texture *background2;
+
+	//place surface info into the texture
+	background1 = SDL_CreateTextureFromSurface(renderer, surface);
+	background2 = SDL_CreateTextureFromSurface(renderer, surface);
+
+	//free the SDL surfaces
+	SDL_FreeSurface(surface);
+
+	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+	SDL_Rect bk1Pos;
+	SDL_Rect bk2Pos;
+
+	//set the x, y, w, and h for the rectangle
+	bk1Pos.x = 0;
+	bk1Pos.y = 0;
+	bk1Pos.w = 1024;
+	bk1Pos.h = 768;
+
+	bk2Pos.x = 0;
+	bk2Pos.y = -768;
+	bk2Pos.w = 1024;
+	bk2Pos.h = 768;
 
 
-    //bg movement speed
-    int backSpeed = 100;
+	//bg movement speed
+	int backSpeed = 100;
 
-    //set up temp vars to hold movement
-    float back1PosX = 0, back1PosY = 0;
-    float back2PosX = 0, back2PosY = -768;
-    //Backgrounds END
+	//set up temp vars to hold movement
+	float back1PosX = 0, back1PosY = 0;
+	float back2PosX = 0, back2PosY = -768;
+	//Backgrounds END
 
-    //******************************** Create Cursor ********************************
-    //create SDL surface to hold the background image
-    surface = IMG_Load(IMGcur.c_str());
-    SDL_Texture *cursor;//create
-    //place surface info into the texture
-    cursor = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
-    //create the SDL_Rectangle for the texture's position and size -x,y,w,h
-    SDL_Rect curPos;
-    SDL_Rect actPos;
-    //set the x, y, w, and h for the rectangle
-    curPos.x = 0;
-    curPos.y = 0;
-    curPos.w = 16;
-    curPos.h = 16;
+	//******************************** Create Cursor ********************************
+	//create SDL surface to hold the background image
+	surface = IMG_Load(IMGcur.c_str());
+	SDL_Texture *cursor;//create
+	//place surface info into the texture
+	cursor = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
+	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+	SDL_Rect curPos;
+	SDL_Rect actPos;
+	//set the x, y, w, and h for the rectangle
+	curPos.x = 0;
+	curPos.y = 0;
+	curPos.w = 16;
+	curPos.h = 16;
 
-    actPos.x = 16;//10
-    actPos.y = 16;//10
-    actPos.w = 16;//10
-    actPos.h = 16;//10
+	actPos.x = 16;//10
+	actPos.y = 16;//10
+	actPos.w = 16;//10
+	actPos.h = 16;//10
 
-    //variable for cursor speed
-    int cSpeed = 400;
-    //Cursor END
+	//variable for cursor speed
+	int cSpeed = 400;
+	//Cursor END
 
-    //******************************** Create Menu Title Text/Image ********************************
-    //create SDL surface to hold the texture file
-    surface = IMG_Load(Tpath.c_str());
-    SDL_Texture *title;//create
-    //place surface info into the texture
-    title = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
-    //create the SDL_Rectangle for the texture's position and size -x,y,w,h
-    SDL_Rect tPos;
-    //set the x, y, w, and h for the rectangle
-    tPos.x = 264;
-    tPos.y = 73;
-    tPos.w = 532;//width of image
-    tPos.h = 71;//height of image
-    //Main Menu END
+	//******************************** Create Menu Title Text/Image ********************************
+	//create SDL surface to hold the texture file
+	surface = IMG_Load(Tpath.c_str());
+	SDL_Texture *title;//create
+	//place surface info into the texture
+	title = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
+	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+	SDL_Rect tPos;
+	//set the x, y, w, and h for the rectangle
+	tPos.x = 264;
+	tPos.y = 73;
+	tPos.w = 532;//width of image
+	tPos.h = 71;//height of image
+	//Main Menu END
 
-    //******************************** Create 1P Normal/Over Text/Image ********************************
-    //create SDL surface to hold the texture file
-    surface = IMG_Load(P1path.c_str());
-    SDL_Texture *Player1;//create
-    //place surface info into the texture
-    Player1 = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
+	//******************************** Create 1P Normal/Over Text/Image ********************************
+	//create SDL surface to hold the texture file
+	surface = IMG_Load(P1path.c_str());
+	SDL_Texture *Player1;//create
+	//place surface info into the texture
+	Player1 = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
 
-    surface = IMG_Load(OverP1path.c_str());
-    SDL_Texture *Player1Over;
-    Player1Over = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
+	surface = IMG_Load(OverP1path.c_str());
+	SDL_Texture *Player1Over;
+	Player1Over = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
 
-    //create the SDL_Rectangle for the texture's position and size -x,y,w,h
-    SDL_Rect p1Pos;
-    //set the x, y, w, and h for the rectangle
-    p1Pos.x = 380;
-    p1Pos.y = 261;
-    p1Pos.w = 311;//width of image
-    p1Pos.h = 42;//height of image
-    //Main Menu END
+	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+	SDL_Rect p1Pos;
+	//set the x, y, w, and h for the rectangle
+	p1Pos.x = 380;
+	p1Pos.y = 261;
+	p1Pos.w = 311;//width of image
+	p1Pos.h = 42;//height of image
+	//Main Menu END
 
-    //******************************** Create 2P Normal Normal/Over Text/Image ********************************
-    //create SDL surface to hold the texture file
-    surface = IMG_Load(P2path.c_str());
-    SDL_Texture *Player2;//create
-    //place surface info into the texture
-    Player2 = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
+	//******************************** Create 2P Normal Normal/Over Text/Image ********************************
+	//create SDL surface to hold the texture file
+	surface = IMG_Load(P2path.c_str());
+	SDL_Texture *Player2;//create
+	//place surface info into the texture
+	Player2 = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
 
-    surface = IMG_Load(OverP2path.c_str());
-    SDL_Texture *Player2Over;
-    Player2Over = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
+	surface = IMG_Load(OverP2path.c_str());
+	SDL_Texture *Player2Over;
+	Player2Over = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
 
-    //create the SDL_Rectangle for the texture's position and size -x,y,w,h
-    SDL_Rect p2Pos;
-    //set the x, y, w, and h for the rectangle
-    p2Pos.x = 360;
-    p2Pos.y = 343;
-    p2Pos.w = 352;//width of image
-    p2Pos.h = 42;//height of image
-    //Main Menu END
+	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+	SDL_Rect p2Pos;
+	//set the x, y, w, and h for the rectangle
+	p2Pos.x = 360;
+	p2Pos.y = 343;
+	p2Pos.w = 352;//width of image
+	p2Pos.h = 42;//height of image
+	//Main Menu END
 
-    //****************************** Create Instructions Normal/Over Text/Image ******************************
-    //create SDL surface to hold the texture file
-    surface = IMG_Load(INSpath.c_str());
-    SDL_Texture *Instructions;//create
-    //place surface info into the texture
-    Instructions = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
+	//****************************** Create Instructions Normal/Over Text/Image ******************************
+	//create SDL surface to hold the texture file
+	surface = IMG_Load(INSpath.c_str());
+	SDL_Texture *Instructions;//create
+	//place surface info into the texture
+	Instructions = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
 
-    surface = IMG_Load(OverINSpath.c_str());
-    SDL_Texture *InstructionsOver;//create
-    InstructionsOver = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
+	surface = IMG_Load(OverINSpath.c_str());
+	SDL_Texture *InstructionsOver;//create
+	InstructionsOver = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
 
-    //create the SDL_Rectangle for the texture's position and size -x,y,w,h
-    SDL_Rect iPos;
-    //set the x, y, w, and h for the rectangle
-    iPos.x = 351;
-    iPos.y = 424;
-    iPos.w = 374;//width of image
-    iPos.h = 42;//height of image
-    //Main Menu END
+	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+	SDL_Rect iPos;
+	//set the x, y, w, and h for the rectangle
+	iPos.x = 351;
+	iPos.y = 424;
+	iPos.w = 374;//width of image
+	iPos.h = 42;//height of image
+	//Main Menu END
 
-    //******************************** Create Quit Normal/Over Text/Image ********************************
-    //create SDL surface to hold the texture file
-    surface = IMG_Load(QUITpath.c_str());
-    SDL_Texture *Quit;//create
-    //place surface info into the texture
-    Quit = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
+	//******************************** Create Quit Normal/Over Text/Image ********************************
+	//create SDL surface to hold the texture file
+	surface = IMG_Load(QUITpath.c_str());
+	SDL_Texture *Quit;//create
+	//place surface info into the texture
+	Quit = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
 
-    surface = IMG_Load(OverQUITpath.c_str());
-    SDL_Texture *QuitOver;//create
-    QuitOver = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_FreeSurface(surface);//free
+	surface = IMG_Load(OverQUITpath.c_str());
+	SDL_Texture *QuitOver;//create
+	QuitOver = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);//free
 
-    //create the SDL_Rectangle for the texture's position and size -x,y,w,h
-    SDL_Rect qPos;
-    //set the x, y, w, and h for the rectangle
-    qPos.x = 391;
-    qPos.y = 503;
-    qPos.w = 288;//width of image
-    qPos.h = 42;//height of image
-    //Main Menu END
+	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+	SDL_Rect qPos;
+	//set the x, y, w, and h for the rectangle
+	qPos.x = 391;
+	qPos.y = 503;
+	qPos.w = 288;//width of image
+	qPos.h = 42;//height of image
+	//Main Menu END
 
 	//********** Set up a Game Controller variable **********
 	SDL_GameController* gController = NULL;
@@ -335,7 +400,7 @@ int main(int argc, char* argv[]) {
 	bool menu, instructions, player1, player2, win, lose, quit;
 
 
-    // The window is open: could enter program loop here (see SDL_PollEvent())
+	// The window is open: could enter program loop here (see SDL_PollEvent())
 	while(!quit)//uninitialized bools default to false
 	{
 		switch(gS)
@@ -434,9 +499,6 @@ int main(int argc, char* argv[]) {
 				thisTime = SDL_GetTicks();
 				deltaTime = (float)(thisTime-lastTime)/1000;
 				lastTime = thisTime;
-
-
-
 				//check input
 				if(SDL_PollEvent(&event))
 				{
@@ -507,6 +569,10 @@ int main(int argc, char* argv[]) {
 			cout<<"Press B for Lose."<<endl;
 			while(player1)
 			{
+				//setup framerate for this section or case
+				thisTime = SDL_GetTicks();
+				deltaTime = (float)(thisTime-lastTime)/1000;
+				lastTime = thisTime;
 				//check input
 				if(SDL_PollEvent(&event))
 				{
@@ -538,6 +604,19 @@ int main(int argc, char* argv[]) {
 						break;
 					}
 				}
+				UpdateBackground();
+
+				//************************************start Drawing
+				//clear sdl renderer
+				SDL_RenderClear(renderer);
+
+				//Draw here
+				SDL_RenderCopy(renderer, background1, NULL/*cropping*/, &bk1Pos);
+				SDL_RenderCopy(renderer, background2, NULL, &bk2Pos);
+				SDL_RenderCopy(renderer, Player1, NULL, &p1Pos);
+
+				//sdl render present
+				SDL_RenderPresent(renderer);
 			}
 			break;
 		case PLAYER2:
@@ -548,6 +627,10 @@ int main(int argc, char* argv[]) {
 			cout<<"Press B for Lose."<<endl;
 			while(player2)
 			{
+				//setup framerate for this section or case
+				thisTime = SDL_GetTicks();
+				deltaTime = (float)(thisTime-lastTime)/1000;
+				lastTime = thisTime;
 				//check input
 				if(SDL_PollEvent(&event))
 				{
@@ -579,6 +662,19 @@ int main(int argc, char* argv[]) {
 						break;
 					}
 				}
+				UpdateBackground();
+
+				//************************************start Drawing
+				//clear sdl renderer
+				SDL_RenderClear(renderer);
+
+				//Draw here
+				SDL_RenderCopy(renderer, background1, NULL/*cropping*/, &bk1Pos);
+				SDL_RenderCopy(renderer, background2, NULL, &bk2Pos);
+				SDL_RenderCopy(renderer, Player2, NULL, &p2Pos);
+
+				//sdl render present
+				SDL_RenderPresent(renderer);
 			}
 			break;//p2 end
 		case WIN:
@@ -586,9 +682,13 @@ int main(int argc, char* argv[]) {
 			//clear
 			cout<<"The Gamestate is Win."<<endl;
 			cout<<"Press A for Menu."<<endl;
-			cout<<"Press B to Quit.."<<endl;
+			cout<<"Press B to Replay."<<endl;
 			while(win)
 			{
+				//setup framerate for this section or case
+				thisTime = SDL_GetTicks();
+				deltaTime = (float)(thisTime-lastTime)/1000;
+				lastTime = thisTime;
 				//check input
 				if(SDL_PollEvent(&event))
 				{
@@ -613,23 +713,42 @@ int main(int argc, char* argv[]) {
 							if(event.cbutton.button == SDL_CONTROLLER_BUTTON_B)
 							{
 								win = false;
-								quit = true;
+								gS = player1;//need to determine whether 1 or 2 players want to replay
 								//break;
 							}
 						}
 						break;
-						}
 					}
 				}
-				break;
+				UpdateBackground();
+
+				//************************************start Drawing
+				//clear sdl renderer
+				SDL_RenderClear(renderer);
+
+				//Draw here
+				SDL_RenderCopy(renderer, background1, NULL/*cropping*/, &bk1Pos);
+				SDL_RenderCopy(renderer, background2, NULL, &bk2Pos);
+				SDL_RenderCopy(renderer, Win, NULL, &wPos);
+				SDL_RenderCopy(renderer, Play, NULL, &pPos);//Play Again
+				SDL_RenderCopy(renderer, Menu, NULL, &mPos);
+				SDL_RenderCopy(renderer, cursor, NULL, &curPos);
+				//sdl render present
+				SDL_RenderPresent(renderer);
+			}
+			break;
 		case LOSE:
 			lose = true;
 			//clear
 			cout<<"The Gamestate is Lose."<<endl;
 			cout<<"Press A for Menu."<<endl;
-			cout<<"Press B to Quit.."<<endl;
+			cout<<"Press B to Replay."<<endl;
 			while(lose)
 			{
+				//setup framerate for this section or case
+				thisTime = SDL_GetTicks();
+				deltaTime = (float)(thisTime-lastTime)/1000;
+				lastTime = thisTime;
 				//check input
 				if(SDL_PollEvent(&event))
 				{
@@ -654,15 +773,30 @@ int main(int argc, char* argv[]) {
 							if(event.cbutton.button == SDL_CONTROLLER_BUTTON_B)
 							{
 								lose = false;
-								quit = true;
+								gS = player1;//need to determine whether 1 or 2 players want to replay
 								//break;
 							}
 						}
 						break;
-						}
 					}
 				}
-				break;
+				UpdateBackground();
+
+				//************************************start Drawing
+				//clear sdl renderer
+				SDL_RenderClear(renderer);
+
+				//Draw here
+				SDL_RenderCopy(renderer, background1, NULL/*cropping*/, &bk1Pos);
+				SDL_RenderCopy(renderer, background2, NULL, &bk2Pos);
+				SDL_RenderCopy(renderer, Lose, NULL, &lPos);
+				SDL_RenderCopy(renderer, Play, NULL, &pPos);//Play Again
+				SDL_RenderCopy(renderer, Menu, NULL, &mPos);
+				SDL_RenderCopy(renderer, cursor, NULL, &curPos);
+				//sdl render present
+				SDL_RenderPresent(renderer);
+			}
+			break;
 		default: break;
 		}
 	}
@@ -672,12 +806,12 @@ int main(int argc, char* argv[]) {
 
 
 
-    //SDL_Delay(3000);  // Pause execution for 3000 milliseconds, for example
+	//SDL_Delay(3000);  // Pause execution for 3000 milliseconds, for example
 
-    // Close and destroy the window
-    SDL_DestroyWindow(window);
+	// Close and destroy the window
+	SDL_DestroyWindow(window);
 
-    // Clean up
-    SDL_Quit();
-    return 0;
+	// Clean up
+	SDL_Quit();
+	return 0;
 }
