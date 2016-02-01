@@ -18,6 +18,12 @@
 
 #if defined(_WIN32) || (_WIN64)
 #include "SDL.h"
+#include "SDL_image.h"
+#endif
+
+#if defined(_WIN32) || (_WIN64)
+#include <direct.h>
+#define getcwd _getcwd
 #endif
 
 #include <stdio.h>
@@ -52,7 +58,96 @@ void UpdateBackground()
 	}
 }
 
+const int JOYSTICK_DEAD_ZONE = 8000;
+float xDir, yDir;//0 / 1
+float posX, posY;
+SDL_Rect curPos, actPos;
+int cSpeed = 400;
 
+void moveCursor(const SDL_ControllerAxisEvent event)
+{
+	//js 0 = 1st player
+	if(event.which == 0)
+	{
+		//check x
+		if(event.axis == 0)
+		{
+			if (event.value < -JOYSTICK_DEAD_ZONE)
+			{
+				xDir = -1.0f;
+			}
+			else if (event.value > JOYSTICK_DEAD_ZONE)
+			{
+				xDir = 1.0f;
+			}
+			else
+			{
+				xDir = 0.0f;
+			}
+		}
+		//check y
+		if(event.axis == 1)
+		{
+			if (event.value < -JOYSTICK_DEAD_ZONE)
+			{
+				yDir = -1.0f;
+			}
+			else if (event.value > JOYSTICK_DEAD_ZONE)
+			{
+				yDir = 1.0f;
+			}
+			else
+			{
+				yDir = 0.0f;
+			}
+		}
+	}
+}
+
+void updateCursor(float deltaTime)
+{
+	//update values
+	posX.x += (cSpeed * xDir)*deltaTime;
+	posY.y += (cSpeed * yDir)*deltaTime;
+
+	//assign to rects
+	curPos.x = (int)(posX+0.5f);
+	curPos.y = (int)(posY+0.5f);
+
+	//update active position of cursor - collision box
+	actPos.x = curPos.x;
+	actPos.y = curPos.y;
+
+	//off the screen x-axis
+	if(curPos.x<0)
+	{
+		curPos.x = 0;
+		posX = curPos.x;
+	}
+	if(curPos.x>1024 - curPos.w)
+	{
+		curPos.x = 1024 - curPos.w;
+		posX = curPos.x;
+	}
+
+	//off the screen y-axis
+	if(curPos.y<0)
+	{
+		curPos.y = 0;
+		posY = curPos.y;
+	}
+	if(curPos.y>768 - curPos.h)
+	{
+		curPos.y = 768 - curPos.h;
+		posY = curPos.y;
+	}
+}
+
+//variables determining overstates for buttons
+bool player1Over = false, player2Over = false, instructionsOver = false,
+		quitOver = false, menuOver = false, playOver = false;
+
+#include "player.h"
 
 int main(int argc, char* argv[]) {
 
@@ -61,17 +156,22 @@ int main(int argc, char* argv[]) {
 	//get current working directory
 	string s_cwd(getcwd(NULL, 0));
 	//create a string linking to the mac's images folder
-	string s_cwd_images = s_cwd + "/Resources/Images";
+	string s_cwd_images = s_cwd + "/Resources/Images/";
 	//test
 	//cout<<s_cwd_images<<endl;
 #endif
 
 #if defined(__linux__)
 	cout << "Running on Linux." << endl;
+	string s_cwd(getcwd(NULL, 0));
+	string s_cwd_images = s_cwd + "/Resources/Images/";
+	//This is the commit at the beginning of v10; Adding Graphics to the Menu
 #endif
 
 #if defined(_WIN32_) || (_WIN64_)
 	cout << "Running on Windows." << endl;
+	string s_cwd(getcwd(NULL, 0));
+	string s_cwd_images = s_cwd + "\\Resources\\Images\\";
 #endif
 
 	SDL_Window *window;                    // Declare a pointer
@@ -101,27 +201,31 @@ int main(int argc, char* argv[]) {
 	//create the renderer
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-	//*********Create Background Image**************
-	string BGpath = s_cwd_images + "/1024x768.png";
-	string IMGcur = s_cwd_images + "/DotCursor.png";
-	string Tpath = s_cwd_images + "/Title.png";
-	string P1path = s_cwd_images + "/P1.png";
-	string P2path = s_cwd_images + "/P2.png";
-	string INSpath = s_cwd_images + "/Instructions.png";
-	string QUITpath = s_cwd_images + "/Quit.png";
-	string OverP1path = s_cwd_images + "/P1Over.png";
-	string OverP2path = s_cwd_images + "/P2Over.png";
-	string OverINSpath = s_cwd_images + "/InstructionsOver.png";
-	string OverQUITpath = s_cwd_images + "/QuitOver.png";
+	//Create Players
+	Player PlayerOne = Player(renderer, 0, s_cwd_images.c_str(), 250.0, 250.0)
 
-	string ITpath = s_cwd_images + "/InstructionsTitle.png";
-	string MENUpath = s_cwd_images + "/Menu.png";
-	string OverMENUpath = s_cwd_images + "/MenuOver.png";
 
-	string LOSEpath = s_cwd_images + "/LoseTitle.png";
-	string WINpath = s_cwd_images + "/WinTitle.png";
-	string PLAYpath = s_cwd_images + "/Play.png";
-	string OverPLAYpath = s_cwd_images + "/PlayOver.png";
+			//*********Create Background Image**************
+			string BGpath = s_cwd_images + "/1024x768.png";//Done
+	string IMGcur = s_cwd_images + "/DotCursor.png";//Done
+	string Tpath = s_cwd_images + "/Title.png";//Done
+	string P1path = s_cwd_images + "/P1.png";//Done
+	string P2path = s_cwd_images + "/P2.png";//Done
+	string INSpath = s_cwd_images + "/Instructions.png";//Done
+	string QUITpath = s_cwd_images + "/Quit.png";//Done
+	string OverP1path = s_cwd_images + "/P1Over.png";//Done
+	string OverP2path = s_cwd_images + "/P2Over.png";//Done
+	string OverINSpath = s_cwd_images + "/InstructionsOver.png";//Done
+	string OverQUITpath = s_cwd_images + "/QuitOver.png";//Done
+
+	string ITpath = s_cwd_images + "/InstructionsTitle.png";//Done
+	string MENUpath = s_cwd_images + "/Menu.png";//Done
+	string OverMENUpath = s_cwd_images + "/MenuOver.png";//Done
+
+	string LOSEpath = s_cwd_images + "/LoseTitle.png";//Done
+	string WINpath = s_cwd_images + "/WinTitle.png";//Done
+	string PLAYpath = s_cwd_images + "/Play.png";//Done
+	string OverPLAYpath = s_cwd_images + "/PlayOver.png";//Done
 	//p1ship, p2ship, win, lose
 
 	//******************************** Create Win Title Text/Image ********************************
@@ -263,21 +367,21 @@ int main(int argc, char* argv[]) {
 	cursor = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_FreeSurface(surface);//free
 	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
-	SDL_Rect curPos;
-	SDL_Rect actPos;
+	//SDL_Rect curPos;
+	//SDL_Rect actPos;
 	//set the x, y, w, and h for the rectangle
 	curPos.x = 0;
 	curPos.y = 0;
 	curPos.w = 16;
 	curPos.h = 16;
 
-	actPos.x = 16;//10
-	actPos.y = 16;//10
+	actPos.x = 0;//10
+	actPos.y = 0;//10
 	actPos.w = 16;//10
 	actPos.h = 16;//10
 
 	//variable for cursor speed
-	int cSpeed = 400;
+	//int cSpeed = 400;
 	//Cursor END
 
 	//******************************** Create Menu Title Text/Image ********************************
@@ -436,34 +540,46 @@ int main(int argc, char* argv[]) {
 						{
 							if(event.cbutton.button == SDL_CONTROLLER_BUTTON_A)
 							{
-								menu = false;
-								gS = INSTRUCTIONS;
-								//break;
-							}
-							if(event.cbutton.button == SDL_CONTROLLER_BUTTON_B)
-							{
-								menu = false;
-								gS = PLAYER1;
-								//break;
-							}
-							if(event.cbutton.button == SDL_CONTROLLER_BUTTON_X)
-							{
-								menu = false;
-								gS = PLAYER2;
-								//break;
-							}
-							if(event.cbutton.button == SDL_CONTROLLER_BUTTON_Y)
-							{
-								menu = false;
-								quit = true;
-								//break;
+								if(player1Over)
+								{
+									menu = false;
+									gS = PLAYER1;
+									player1Over = false;
+								}
+								if(player2Over)
+								{
+									menu = false;
+									gS = PLAYER2;
+									player2Over = false;
+								}
+								if(instructionsOver)
+								{
+									menu = false;
+									gS = INSTRUCTIONS;
+									instructionsOver = false;
+								}
+								if(quitOver)
+								{
+									menu = false;
+									quit = true;
+									quitOver = false;
+								}
 							}
 						}
+						break;
+					case SDL_CONTROLLERAXISMOTION:
+						moveCursor(event.caxis);
 						break;
 					}
 
 				}
 				UpdateBackground();
+				updateCursor(deltaTime);
+
+				player1Over = SDL_HasIntersection(&actPos, &p1Pos);
+				player2Over = SDL_HasIntersection(&actPos, &p2Pos);
+				instructionsOver = SDL_HasIntersection(&actPos, &iPos);
+				quitOver = SDL_HasIntersection(&actPos, &qPos);
 
 				//************************************start Drawing
 				//clear sdl renderer
@@ -473,10 +589,26 @@ int main(int argc, char* argv[]) {
 				SDL_RenderCopy(renderer, background1, NULL/*cropping*/, &bk1Pos);
 				SDL_RenderCopy(renderer, background2, NULL, &bk2Pos);
 				SDL_RenderCopy(renderer, title, NULL, &tPos);
-				SDL_RenderCopy(renderer, Player1, NULL, &p1Pos);
-				SDL_RenderCopy(renderer, Player2, NULL, &p2Pos);
-				SDL_RenderCopy(renderer, Instructions, NULL, &iPos);
-				SDL_RenderCopy(renderer, Quit, NULL, &qPos);
+				//P1 Button
+				if(player1Over)
+					SDL_RenderCopy(renderer, Player1Over, NULL, &p1Pos);
+				else
+					SDL_RenderCopy(renderer, Player1, NULL, &p1Pos);
+				//P2 Button
+				if(player2Over)
+					SDL_RenderCopy(renderer, Player2Over, NULL, &p1Pos);
+				else
+					SDL_RenderCopy(renderer, Player2, NULL, &p2Pos);
+				//Instructions Button
+				if(instructionsOver)
+					SDL_RenderCopy(renderer, InstructionsOver, NULL, &iPos);
+				else
+					SDL_RenderCopy(renderer, Instructions, NULL, &iPos);
+				//Quit Button
+				if(quitOver)
+					SDL_RenderCopy(renderer, QuitOver, NULL, &qPos);
+				else
+					SDL_RenderCopy(renderer, Quit, NULL, &qPos);
 
 
 				SDL_RenderCopy(renderer, cursor, NULL, &curPos);//last
@@ -485,7 +617,7 @@ int main(int argc, char* argv[]) {
 				SDL_RenderPresent(renderer);
 			}
 			break;
-		case INSTRUCTIONS:
+		case INSTRUCTIONS://~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Fix Menu Options
 			instructions = true;
 			//clear
 			cout<<"The Gamestate is Instructions."<<endl;
@@ -543,7 +675,7 @@ int main(int argc, char* argv[]) {
 					}
 				}
 				UpdateBackground();
-
+				updateCursor(deltaTime);
 				//************************************start Drawing
 				//clear sdl renderer
 				SDL_RenderClear(renderer);
@@ -552,6 +684,28 @@ int main(int argc, char* argv[]) {
 				SDL_RenderCopy(renderer, background1, NULL/*cropping*/, &bk1Pos);
 				SDL_RenderCopy(renderer, background2, NULL, &bk2Pos);
 				SDL_RenderCopy(renderer, title, NULL, &tPos);
+
+				//P1 Button
+				if(player1Over)
+					SDL_RenderCopy(renderer, Player1Over, NULL, &p1Pos);
+				else
+					SDL_RenderCopy(renderer, Player1, NULL, &p1Pos);
+				//P2 Button
+				if(player2Over)
+					SDL_RenderCopy(renderer, Player2Over, NULL, &p1Pos);
+				else
+					SDL_RenderCopy(renderer, Player2, NULL, &p2Pos);
+				//Instructions Button
+				if(instructionsOver)
+					SDL_RenderCopy(renderer, InstructionsOver, NULL, &iPos);
+				else
+					SDL_RenderCopy(renderer, Instructions, NULL, &iPos);
+				//Quit Button
+				if(quitOver)
+					SDL_RenderCopy(renderer, QuitOver, NULL, &qPos);
+				else
+					SDL_RenderCopy(renderer, Quit, NULL, &qPos);
+
 				SDL_RenderCopy(renderer, Ititle, NULL, &itPos);
 				SDL_RenderCopy(renderer, Menu, NULL, &mPos);
 
@@ -565,8 +719,8 @@ int main(int argc, char* argv[]) {
 			player1 = true;
 			//clear
 			cout<<"The Gamestate is 1-Player."<<endl;
-			cout<<"Press A for Win."<<endl;
-			cout<<"Press B for Lose."<<endl;
+			cout<<"Press X for Win."<<endl;
+			cout<<"Press Y for Lose."<<endl;
 			while(player1)
 			{
 				//setup framerate for this section or case
@@ -588,24 +742,30 @@ int main(int argc, char* argv[]) {
 					case SDL_CONTROLLERBUTTONDOWN:
 						if(event.cdevice.which == 0)//0=p1, 1=p2
 						{
-							if(event.cbutton.button == SDL_CONTROLLER_BUTTON_A)
+							if(event.cbutton.button == SDL_CONTROLLER_BUTTON_X)
 							{
 								player1 = false;
 								gS = WIN;
 								//break;
 							}
-							if(event.cbutton.button == SDL_CONTROLLER_BUTTON_B)
+							if(event.cbutton.button == SDL_CONTROLLER_BUTTON_Y)
 							{
 								player1 = false;
 								gS = LOSE;
 								//break;
 							}
+							//send button press info to p1
+							PlayerOne.OnControllerButton(event.cbutton);
 						}
 						break;
+					case SDL_CONTROLLERAXISMOTION:
+					{
+						PlayerOne.OnControllerAxis(event.caxis);
+					}break;
 					}
 				}
 				UpdateBackground();
-
+				PlayerOne.Update(deltaTime);
 				//************************************start Drawing
 				//clear sdl renderer
 				SDL_RenderClear(renderer);
@@ -663,7 +823,6 @@ int main(int argc, char* argv[]) {
 					}
 				}
 				UpdateBackground();
-
 				//************************************start Drawing
 				//clear sdl renderer
 				SDL_RenderClear(renderer);
@@ -721,7 +880,7 @@ int main(int argc, char* argv[]) {
 					}
 				}
 				UpdateBackground();
-
+				updateCursor(deltaTime);
 				//************************************start Drawing
 				//clear sdl renderer
 				SDL_RenderClear(renderer);
@@ -781,7 +940,7 @@ int main(int argc, char* argv[]) {
 					}
 				}
 				UpdateBackground();
-
+				updateCursor(deltaTime);
 				//************************************start Drawing
 				//clear sdl renderer
 				SDL_RenderClear(renderer);
