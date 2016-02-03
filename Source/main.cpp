@@ -36,6 +36,17 @@ float deltaTime = 0.0;
 int thisTime = 0;
 int lastTime = 0;
 
+//create the SDL_Rectangle for the texture's position and size -x,y,w,h
+SDL_Rect bk1Pos;
+SDL_Rect bk2Pos;
+//bg movement speed
+int backSpeed = 100;
+
+//set up temp vars to hold movement
+float back1PosX = 0, back1PosY = 0;
+float back2PosX = 0, back2PosY = -768;
+//Backgrounds END
+
 void UpdateBackground()
 {
 	//Update background 1
@@ -340,10 +351,6 @@ int main(int argc, char* argv[]) {
 	//free the SDL surfaces
 	SDL_FreeSurface(surface);
 
-	//create the SDL_Rectangle for the texture's position and size -x,y,w,h
-	SDL_Rect bk1Pos;
-	SDL_Rect bk2Pos;
-
 	//set the x, y, w, and h for the rectangle
 	bk1Pos.x = 0;
 	bk1Pos.y = 0;
@@ -356,13 +363,7 @@ int main(int argc, char* argv[]) {
 	bk2Pos.h = 768;
 
 
-	//bg movement speed
-	int backSpeed = 100;
 
-	//set up temp vars to hold movement
-	float back1PosX = 0, back1PosY = 0;
-	float back2PosX = 0, back2PosY = -768;
-	//Backgrounds END
 
 	//******************************** Create Cursor ********************************
 	//create SDL surface to hold the background image
