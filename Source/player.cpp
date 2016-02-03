@@ -11,9 +11,9 @@ Player::Player(SDL_Renderer *renderer, int pNum, string filePath, float x, float
 	speed = 500.0f;
 
 	if(playerNum == 0)
-		playerPath = filePath+"player1.png";
+		playerPath = filePath+"Player1.png";
 	else
-		playerPath = filePath+"player2.png";
+		playerPath = filePath+"Player2.png";
 
 	surface = IMG_Load(playerPath.c_str());
 	texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -22,11 +22,9 @@ Player::Player(SDL_Renderer *renderer, int pNum, string filePath, float x, float
 
 	posRect.x = x;
 	posRect.y = y;
-
+	//Use SDL_Query to get the W and H of the player's House.
 	int w, h;
-
 	SDL_QueryTexture(texture, NULL, NULL, &w, &h);
-
 	posRect.w = w;
 	posRect.h = h;
 
@@ -37,7 +35,7 @@ Player::Player(SDL_Renderer *renderer, int pNum, string filePath, float x, float
 	yDir = 0;
 
 }
-//
+
 void Player::Update(float deltaTime)
 {
 	//update values
@@ -72,7 +70,7 @@ void Player::Update(float deltaTime)
 		posY = posRect.y;
 	}
 }
-//
+
 void Player::Draw(SDL_Renderer *renderer)
 {
 	SDL_RenderCopy(renderer, texture, NULL, &posRect);
@@ -91,6 +89,7 @@ void Player::OnControllerButton(const SDL_ControllerButtonEvent event)
 
 void OnControllerAxis (const SDL_ControllerAxisEvent event)
 {
+	//Axis movements and buton presses both sent here as SDL_ControllerAxisEvent structures
 	if(event.which == 0 && playerNum == 0)
 	{
 		//check x
@@ -125,8 +124,8 @@ void OnControllerAxis (const SDL_ControllerAxisEvent event)
 				yDir = 0.0f;
 			}
 		}
-	}
-	/*else if(event.which == 1 && playerNum == 1)
+	}//Note to self: switch the elseif with a regular if if there are problems
+	else if(event.which == 1 && playerNum == 1)
 	{
 		//check x
 		if(event.axis == 0)
@@ -160,9 +159,12 @@ void OnControllerAxis (const SDL_ControllerAxisEvent event)
 				yDir = 0.0f;
 			}
 		}
-	}*/
+	}
 }
-
+Player::~Player()
+{
+	SDL_DestroyTexture(texture);
+}
 
 
 

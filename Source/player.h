@@ -19,7 +19,7 @@
 #include "SDL_image.h"
 #endif
 
-#include <stdio.h>
+#include <string.h>
 #include <iostream>
 using namespace std;
 
@@ -30,39 +30,32 @@ public:
 	string playerPath;
 	//the player's number
 	int playerNum;
-	//load the png
+	//load the png in
 	SDL_Surface *surface;
-	//hold image
+	//holds the image
 	SDL_Texture *texture;
 	//XYWH
 	SDL_Rect posRect;
-	//
+	//joystick axis (-1, 0, 1)
 	float xDir;
 	float yDir;
-	//
+	//player speed1
 	float speed;
-	//
+	//player's position to avoid precision loss
 	float posX, posY;
 
 	//Player's creation method using passed vals
 	//starting pos x/y
 	Player(SDL_Renderer *renderer, int pNum, string filePath, float x, float y);
-
 	//update player using deltaTime
 	void Update(float deltaTime);
-
 	//draw player
 	void Draw(SDL_Renderer *renderer);
-
 	//allows the player to move via the joystick axis
 	void OnControllerAxis (const SDL_ControllerAxisEvent event);
-
 	//
 	void OnControllerButton(const SDL_ControllerButtonEvent event);
-
-	//~Player();
-
-
+	~Player();
 };
 
 
