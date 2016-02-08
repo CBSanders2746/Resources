@@ -34,13 +34,23 @@ Player::Player(SDL_Renderer *renderer, int pNum, string filePath, float x, float
 	xDir = 0;
 	yDir = 0;
 
+	string bulletPath;
+	if (playerNum == 0)
+		bulletPath = filePath + "Bullet1.png";
+	else
+		bulletPath = filePath + "Bullet2.png";
+	for (int i = 0; i < 10; i++)
+	{
+		Bullet temp(renderer, bulletPath, -1000, -1000);
+		bulletList.push_back(temp);
+	}
 }
 
 void Player::Update(float deltaTime)
 {
 	//update values
-	posX.x += (speed * xDir)*deltaTime;
-	posY.y += (speed * yDir)*deltaTime;
+	posX += (speed * xDir)*deltaTime;
+	posY += (speed * yDir)*deltaTime;
 
 	//assign to rects
 	posRect.x = (int)(posX+0.5f);
@@ -64,30 +74,54 @@ void Player::Update(float deltaTime)
 		posRect.y = 0;
 		posY = posRect.y;
 	}
-	if(posRect.y>768 - v.h)
+	if(posRect.y>768 - posRect.h)
 	{
 		posRect.y = 768 - posRect.h;
 		posY = posRect.y;
 	}
+
+	for (int i = 0; i < bulletList.size(); i++)
+		if (bulletList[i].active)
+			bulletList[i].Update(deltaTime);
 }
 
 void Player::Draw(SDL_Renderer *renderer)
 {
 	SDL_RenderCopy(renderer, texture, NULL, &posRect);
+	for (int i = 0; i < bulletList.size(); i++)
+		if (bulletList[i].active)
+			bulletList[i].Draw(renderer);
+}
+
+void Player::CreateBullet()
+{
+	for (int i = 0; i < bulletList.size(); i++)
+	{
+		if (bulletList[i].active == false)
+		{
+			bulletList[i].active = true;
+			bulletList[i].posRect.x = (posX + (posRect.w / 2));
+			bulletList[i].posRect.x = (bulletList[i].posRect.x - (bulletList[i].posRect.w / 2));
+			bulletList[i].posRect.y = posRect.y;
+			bulletList[i].posX = posX;
+			bulletList[i].posY = posY;
+			break;
+		}
+	}
 }
 
 void Player::OnControllerButton(const SDL_ControllerButtonEvent event)
 {
 	if (event.which == 0 && playerNum == 0)
-		if(event.button == 0)
-			cout<<"Player 1 - Button A"<<endl;
+		if (event.button == 0)
+			
 
 	if (event.which == 1 && playerNum == 1)
 		if(event.button == 0)
-			cout<<"Player 2 - Button A"<<endl;
+			CreateBullet();
 }
 
-void OnControllerAxis (const SDL_ControllerAxisEvent event)
+void Player::OnControllerAxis (const SDL_ControllerAxisEvent event)
 {
 	//Axis movements and buton presses both sent here as SDL_ControllerAxisEvent structures
 	if(event.which == 0 && playerNum == 0)

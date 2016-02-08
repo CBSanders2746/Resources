@@ -1,12 +1,13 @@
 // Example program:
 // Using SDL2 to create an application window
-//Note to self: Convert the 2Player mode to true multiplayer over the break as a test-thingy.
+//Note to self: Convert the 2Player mode to true multiplayer over the semester's break as a test-thingy.
 //-Create a class/method to handle the creations of the images
+//Current Video: Complete; Boy... what a week to be sick. -.-
 #if defined(__APPLE__)
 #include "SDL2/SDL.h"
 #include "SDL2_Image/SDL_image.h"
 #endif
-//Current Video: Interactions-7
+
 #if defined(__linux__)
 #include "SDL2/SDL.h"
 #include "SDL2/SDL_image.h"
@@ -72,7 +73,7 @@ void UpdateBackground()
 
 const int JOYSTICK_DEAD_ZONE = 8000;
 float xDir, yDir;//0 / 1
-float posX, posY;
+float posX = 0, posY = 0;
 SDL_Rect curPos, actPos;
 int cSpeed = 400;
 
@@ -119,8 +120,8 @@ void moveCursor(const SDL_ControllerAxisEvent event)
 void updateCursor(float deltaTime)
 {
 	//update values
-	posX.x += (cSpeed * xDir)*deltaTime;
-	posY.y += (cSpeed * yDir)*deltaTime;
+	posX += (cSpeed * xDir)*deltaTime;
+	posY += (cSpeed * yDir)*deltaTime;
 
 	//assign to rects
 	curPos.x = (int)(posX+0.5f);
@@ -180,7 +181,7 @@ int main(int argc, char* argv[]) {
 	//This is the commit at the beginning of v10; Adding Graphics to the Menu
 #endif
 
-#if defined(_WIN32_) || (_WIN64_)
+#if defined(_WIN32) || (_WIN64)
 	cout << "Running on Windows." << endl;
 	string s_cwd(getcwd(NULL, 0));
 	string s_cwd_images = s_cwd + "\\Resources\\Images\\";
@@ -495,11 +496,15 @@ int main(int argc, char* argv[]) {
 	//Main Menu END
 
 	//********** Set up a Game Controller variable **********
-	SDL_GameController* gController = NULL;
-	// Open gController
-	gController = SDL_GameControllerOpen(0);
-	/// turn on gController Events
 	SDL_GameControllerEventState(SDL_ENABLE);
+
+	SDL_GameController* gController0 = NULL;
+	SDL_GameController*	gController1 = NULL;
+	// Open gController
+	gController0 = SDL_GameControllerOpen(0);
+	gController1 = SDL_GameControllerOpen(1);
+	/// turn on gController Events
+	
 	//sdl event polling keyboard, etc... INPUT
 	SDL_Event event;
 	//SET UP VARS for the gamestates
@@ -781,7 +786,7 @@ int main(int argc, char* argv[]) {
 					switch(event.type)
 					{
 					case SDL_CONTROLLERBUTTONDOWN:
-						if(event.cdevice.which == 0)//0=p1, 1=p2
+						if(event.cdevice.which == 0 || event.cdevice.which == 1)//0=p1, 1=p2
 						{
 							if(event.cbutton.button == SDL_CONTROLLER_BUTTON_A)
 							{
@@ -985,8 +990,6 @@ int main(int argc, char* argv[]) {
 		default: break;
 		}
 	}
-
-
 	/*
 	 	 	 	//P1 Button
 				if(player1Over)
@@ -1014,14 +1017,9 @@ int main(int argc, char* argv[]) {
 				else
 					SDL_RenderCopy(renderer, Quit, NULL, &qPos);
 	 */
-
-
-
 	//SDL_Delay(3000);  // Pause execution for 3000 milliseconds, for example
-
 	// Close and destroy the window
 	SDL_DestroyWindow(window);
-
 	// Clean up
 	SDL_Quit();
 	return 0;

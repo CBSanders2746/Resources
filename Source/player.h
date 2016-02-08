@@ -23,9 +23,14 @@
 #include <iostream>
 using namespace std;
 
+#include <vector>
+#include "bullet.h"
+
 class Player
 {
 public:
+	//
+	vector<Bullet> bulletList;
 	//hold the path to the player's texture
 	string playerPath;
 	//the player's number
@@ -56,6 +61,9 @@ public:
 	//
 	void OnControllerButton(const SDL_ControllerButtonEvent event);
 	~Player();
+private:
+	//
+	void CreateBullet();
 };
 
 
