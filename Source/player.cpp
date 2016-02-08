@@ -80,7 +80,7 @@ void Player::Update(float deltaTime)
 		posY = posRect.y;
 	}
 
-	for (int i = 0; i < bulletList.size(); i++)
+	for (int i = 0; i < bulletList.size(); i++)//Note: All of the 'bulletList[i].' lines are NOT actually errors for some reason.
 		if (bulletList[i].active)
 			bulletList[i].Update(deltaTime);
 }
@@ -114,11 +114,11 @@ void Player::OnControllerButton(const SDL_ControllerButtonEvent event)
 {
 	if (event.which == 0 && playerNum == 0)
 		if (event.button == 0)
-			
 
-	if (event.which == 1 && playerNum == 1)
-		if(event.button == 0)
-			CreateBullet();
+
+			if (event.which == 1 && playerNum == 1)
+				if(event.button == 0)
+					CreateBullet();
 }
 
 void Player::OnControllerAxis (const SDL_ControllerAxisEvent event)

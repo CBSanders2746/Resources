@@ -19,8 +19,8 @@ Bullet::Bullet(SDL_Renderer *renderer, string filePath, float x, float y)
 	posRect.w = w;
 	posRect.h = h;
 
-	posRect.x - x - (posRect.w / 2);
-	posRect.y - y;
+	posRect.x = x - (posRect.w / 2);
+	posRect.y = y;
 
 	posX = x;
 	posY = y;
